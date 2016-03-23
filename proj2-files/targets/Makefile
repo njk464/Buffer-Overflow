@@ -24,6 +24,9 @@ install: $(targets)
 	-$(RM) /tmp/target* /tmp/target*.c
 	$(CP) $(sources) $(targets) /tmp
 
+cleantmp: $(targets)
+	-$(RM) /tmp/target* /tmp/target*.c
+	$(RM) /tmp/tmalloc.c
 
 setuid:
 ifeq ($(shell id -u),0)
