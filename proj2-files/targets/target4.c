@@ -65,13 +65,13 @@ int foo(char *arg)
   tfree(p);
   tfree(q);
   
-  if ( (p = tmalloc(150)) == NULL)
+  if ( (p = tmalloc(250)) == NULL)
     {
       fprintf(stderr, "tmalloc failure\n");
       exit(EXIT_FAILURE);
     }
 
-  obsd_strlcpy(p, arg, 150);
+  obsd_strlcpy(p, arg, 250);
 
   tfree(q);
 
