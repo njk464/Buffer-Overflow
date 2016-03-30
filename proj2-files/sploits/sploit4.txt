@@ -1,1 +1,16 @@
-Use this file to explain how your sploit4 works.
+Our sploit utilizizes the vulnerability of a double free. We allocate two blocks of memory, one 80 bytes (really 88), and the other 60 bytes (really 72). These blocks are then freed so that they can be used again. We then allocate 250 bytes (really 264). It takes 96 bytes to get to where q points to. So we filled up the initial space with the shellcode. The next 4 bytes we set as the location of the shell code in memory. The next 4 after that we set as the location of the return address stored on the stack. Our exploit occurs in the second call to free(q). Specifically in the code below.
+
+// Our shell code is | 04 eb 90 90 | ff ff ff ff | <actual shell code> |
+p = TOCHUNK(vp);
+CLR_FREEBIT(p);
+q = p->s.l;		// q is set to the start of the shell code.
+if (q != NULL && GET_FREEBIT(q)) // the GET_FREEBIT checks if the last bit is set in q->s.r. For us this is | ff ff ff ff |
+{
+  CLR_FREEBIT(q);
+  q->s.r      = p->s.r; // overwrites a bit of the shell code with the return address location. This part does not matter.
+  p->s.r->s.l = q; // Overwrites the return address with the start of our shell code so that on return our shell code executes.
+  SET_FREEBIT(q);
+  p = q;
+}
+
+Since part of the shell code is overwritten from free(q), we had to put in a way to get around it. So we had it NOP twice and then short jump forward 4 bytes to the actual shell code. | 04 eb 90 90 |. The rest is history.
