@@ -1,1 +1,13 @@
-Use this file to explain how your sploit5 works.
+The vulnerability that is present in Target5 that allowed us to open a root shell, was target5's use of snprintf to copy the contents of our passed buffer into target5's local buffer. By using snprintf(), we made sure that our buffer contained an address(technically two) into which we would write the malicious return address that would point at our shell script in the buffer, and the shell script itself. We did this all while staying within the target's 60 byte buffer size. We added to our own buffer on top of this, however, and while this addition would not be written into target5's local buffer, it would still be read and interpreted by the snprintf() function. 
+
+The additional string that we added to our buffer was a formatted string, and we made sure not to add any arguments with which the formatted string would operate on. When snprintf() received our formatted string, it pulled from the stack expecting that we had passed arguments, and those arguments would have been located where snprintf() was pulling. We did not include any additional arguments, however. We also probed the stack using previous 
+'%x' placeholders that would print off contents of the stack. We included several of these %x placeholders after the addresses that we passed into our buffer, from there we found that our addresses were accessible as if they were parameters 5 and 7 (had we passed parameters, of course.) Knowing this, we then calculated the malicious return address that we would need, and then wrote that addresses using %5$n and %7$n, which were preceeded by enough characters that equaled the value of our malicious return address. We created this many characters by using %Mu, where M was the number of bytes needed to help construct the malicious return address. (We had trouble getting our program to write to a single address, so we split the address into two adresses. The two addresses that we wrote to were 0xbffffe2c and 0xbffffe2)
+
+When the program tried to return, it executed our shell script and opened a root shell for us.
+
+Target 5 could have prevented our attack by not using snprintf() and opting for memcopy() with a proper measured length or by using:
+
+for(int i = 0; i < localbuf.size && i < passedbuf.size; i++) {
+	localbuf[i] = passedbuf[i];
+}
+instead.
